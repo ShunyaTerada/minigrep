@@ -9,7 +9,7 @@ fn main() {
     dbg!(&args); //バイナリファイルパスを確認できる
 
     // 引数解析
-    let config = Config::build(&args).unwrap_or_else(|err| {
+    let config = Config::build(env::args()).unwrap_or_else(|err| {
         eprintln!("引数解析の問題：{err}");
         process::exit(1);
     });

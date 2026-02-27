@@ -40,14 +40,22 @@ pub struct Config {
 }
 
 impl Config {
-    pub fn build(args: &[String]) -> Result<Config, &'static str>{
-        // 引数の数が足りてるかチェック
-        if args.len() < 3 {
-            return Err("引数が足りません");
-        }
-        let query = args[1].clone(); 
-        let target_file_path = args[2].clone();
-            //args[0]はバイナリーファイルのパスが占有している
+    pub fn build(
+        mut args: impl Iterator<Item = String>,) -> Result<Config, &'static str>{
+        
+        //args[0]はバイナリーファイルのパスが占有している
+        args.next();
+
+        let query = match args.next() {
+            Some(arg) => arg,
+            None => return Err("クエリ文字列を取得できませんでした"),
+        }; 
+
+        let target_file_path = match args.next() {
+            Some(arg) => arg,
+            None => return Err("ファイル名を取得できませんでした"),
+        };
+            
 
         //環境変数IGNORE_CASEの有無を確認
         let ignore_case = env::var("IGNORE_CASE").is_ok();
@@ -81,30 +89,24 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>>{
 
 //戻り値のライフタイムはコンテンツが生存している間有効である必要がある
 pub fn search<'a>(query: &str, contents: &'a str) -> Vec<&'a str>{
-    let mut results = Vec::new();
-    // lineメソッドはイテレータを返す
-    for line in contents.lines(){
-        if line.contains(query){
-            results.push(line);
-        }
-    }
-
-    results
+    contents
+        .lines()
+        .filter(|line| line.contains(query))
+        .collect()    
 }
 
 //大文字小文字関係なく検索したい
 pub fn search_case_insensitive<'a>(query: &str, contents: &'a str) -> Vec<&'a str>{
     //to_lowercaseメソッドは100%正確ではないため、厳密にしたい場合は以下のコードでは不十分
     let query = query.to_lowercase();//変換後はStringになる
-    let mut results = Vec::new();
-
-    for line in contents.lines() {
-        if line.to_lowercase().contains(&query) {//小文字変換するときにStringになっているため参照記号（&）が必要
-            results.push(line);
-        }
-    }
-
-    results
+    
+    contents
+        .lines()
+        .filter(
+            |line| line
+            .to_lowercase()
+            .contains(&query))
+        .collect()
 }
 
 

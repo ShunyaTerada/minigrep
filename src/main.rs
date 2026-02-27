@@ -10,14 +10,14 @@ fn main() {
 
     // 引数解析
     let config = Config::build(&args).unwrap_or_else(|err| {
-        println!("引数解析の問題：{err}");
+        eprintln!("引数解析の問題：{err}");
         process::exit(1);
     });
 
     println!("検索ファイル：{}\n検索対象    ：{}", config.target_file_path, config.query);
 
     if let Err(e) = minigrep::run(config) {
-        println!(" アプリケーションエラー：{e}");
+        eprintln!(" アプリケーションエラー：{e}");
         process::exit(1);
     }
 }
